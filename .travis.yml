@@ -1,0 +1,13 @@
+language: erlang
+otp_release:
+  - 21.0
+  - 20.3
+install:
+  - rebar3 escriptize
+before_script:
+  - epmd -daemon
+script:
+  - rebar3 dialyzer
+  - rebar3 xref
+  - rebar3 eunit
+  - rebar3 ct

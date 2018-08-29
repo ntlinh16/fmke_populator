@@ -1,5 +1,6 @@
-fmke_populator
-=====
+# fmke_populator
+![Erlang Version](https://img.shields.io/badge/Erlang%2FOTP-21-brightgreen.svg)
+[![Build Status](https://travis-ci.org/goncalotomas/fmke_populator.svg?branch=master)](https://travis-ci.org/goncalotomas/fmke_populator)
 
 A command line tool to populate databases prior to the [FMKe benchmark][3]. Requires [Erlang][1] and [rebar3][2] to build, or just Erlang if you download a release binary.
 

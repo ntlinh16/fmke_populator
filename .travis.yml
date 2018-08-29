@@ -7,6 +7,5 @@ install:
 before_script:
   - epmd -daemon
 script:
-  - rebar3 dialyzer
   - rebar3 xref
   - rebar3 eunit

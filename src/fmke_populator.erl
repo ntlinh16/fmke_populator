@@ -49,7 +49,8 @@ main(CliArgs) ->
     %% start distribution layer and attempt to establish contact with target nodes
     start_node(Nodename, Cookie),
     pong = try_multi_ping(Nodes),
-    {ok, Database} = rpc:call(hd(Nodes), application, get_env, [fmke, target_database]),
+    {ok, Driver} = rpc:call(hd(Nodes), application, get_env, [fmke, driver]),
+    io:format("FMKe node is using module ~p as the driver.~n", [Driver]),
     %% check total number of records according to dataset
     TotalFacilities = fmke_dataset:num_facilities(Dataset),
     TotalPatients = fmke_dataset:num_patients(Dataset),
@@ -86,7 +87,7 @@ main(CliArgs) ->
     maybe_start_report_server(Update),
     Start = erlang:monotonic_time(),
     %% Begin actual population
-    io:format("Populating ~p...~n", [Database]),
+    io:format("Populating FMKe...~n"),
     fmke_populator_coordinator:begin_population(),
     receive
         {error, {coord_exit, Reason}} ->

@@ -94,14 +94,17 @@ main(CliArgs) ->
     receive
         {error, {coord_exit, Reason}} ->
             maybe_shutdown_report_server(Update),
+            maybe_shutdown_pop_module(hd(Nodes)),
             io:format("Error - Population coordinator process died:~n~p~n", [Reason]),
             erlang:halt(?EXIT_COORD_DIED);
         {error, Error} ->
             maybe_shutdown_report_server(Update),
+            maybe_shutdown_pop_module(hd(Nodes)),
             io:format("Error - Population terminated abrubtly due to internal error:~p~n", [Error]),
             erlang:halt(?EXIT_POP_ERROR);
         {ok, NumOps} ->
             maybe_shutdown_report_server(Update),
+            maybe_shutdown_pop_module(hd(Nodes)),
             End = erlang:monotonic_time(),
             TimeDiff = erlang:convert_time_unit(End-Start, native, second),
             print_result(NumOps, TimeDiff),
@@ -134,9 +137,19 @@ remote_module(Node, Database) ->
                     io:format("Module 'fmke_populate' does not support ~p, cannot speed up insertion.", [Database]),
                     fmke;
                 true ->
+                    {ok, _Pid} = rpc:call(Node, fmke_populate, start, []),
                     io:format("Using check-free insertion mode from the remote 'fmke_populate' module."),
                     fmke_populate
             end
+    end.
+
+maybe_shutdown_pop_module(Node) ->
+    [{mod, Module}] = ets:lookup(?ETS_TABLE, mod),
+    case Module of
+        fmke ->
+            ok;
+        fmke_populate ->
+            rpc:call(Node, fmke_populate, stop, [])
     end.
 
 num_or_zero(_N, true) -> 0;

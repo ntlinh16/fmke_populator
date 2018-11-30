@@ -132,7 +132,7 @@ rpc(Node, Module, Op, Params, Timeout, Tries, Continue) ->
         {error, staff_id_taken} when Continue == true ->
             skipped;
         {badrpc, timeout} ->
-            rpc(Node, Op, Params, Timeout, Tries-1, Continue);
+            rpc(Node, Module, Op, Params, Timeout, Tries-1, Continue);
         {badrpc, nodedown} ->
             exit({nodedown, Node});
         {badrpc, Other} ->

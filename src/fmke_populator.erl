@@ -128,17 +128,17 @@ print_result(Ops, Time) ->
 remote_module(Node, Database) ->
     case rpc:call(Node, code, which, [fmke_populate]) of
         non_existing ->
-            io:format("Module 'fmke_populate' not loaded on remote node, cannot speed up insertion."),
+            io:format("Module 'fmke_populate' not loaded on remote node, cannot speed up insertion.~n"),
             fmke;
         _Path ->
             Supported = rpc:call(Node, fmke_populate, supported, []),
             case lists:member(Database, Supported) of
                 false ->
-                    io:format("Module 'fmke_populate' does not support ~p, cannot speed up insertion.", [Database]),
+                    io:format("Module 'fmke_populate' does not support ~p, cannot speed up insertion.~n", [Database]),
                     fmke;
                 true ->
                     {ok, _Pid} = rpc:call(Node, fmke_populate, start, []),
-                    io:format("Using check-free insertion mode from the remote 'fmke_populate' module."),
+                    io:format("Using check-free insertion mode from the remote 'fmke_populate' module.~n"),
                     fmke_populate
             end
     end.

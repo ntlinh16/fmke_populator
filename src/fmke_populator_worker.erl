@@ -112,12 +112,13 @@ rpc(Node, Op, Params) ->
     [{timeout, Timeout}] = ets:lookup(?ETS_TABLE, timeout),
     [{retries, Retries}] = ets:lookup(?ETS_TABLE, retries),
     [{continue_if_exists, Continue}] = ets:lookup(?ETS_TABLE, continue_if_exists),
-    rpc(Node, Op, Params, Timeout, 1+Retries, Continue).
+    [{mod, Module}] = ets:lookup(?ETS_TABLE, mod),
+    rpc(Node, Module, Op, Params, Timeout, 1+Retries, Continue).
 
-rpc(Node, Op, Params, Timeout, 0, _Continue) ->
-    exit({op_failed, Node, {Op, Params, Timeout}});
-rpc(Node, Op, Params, Timeout, Tries, Continue) ->
-    case rpc:call(Node, fmke, Op, Params, Timeout) of
+rpc(Node, Module, Op, Params, Timeout, 0, _Continue) ->
+    exit({op_failed, Node, {Module, Op, Params, Timeout}});
+rpc(Node, Module, Op, Params, Timeout, Tries, Continue) ->
+    case rpc:call(Node, Module, Op, Params, Timeout) of
         ok ->
             ok;
         {error, facility_id_taken} when Continue == true ->

@@ -50,6 +50,7 @@ main(CliArgs) ->
     start_node(Nodename, Cookie),
     pong = try_multi_ping(Nodes),
     {ok, Driver} = rpc:call(hd(Nodes), application, get_env, [fmke, driver]),
+    {ok, Database} = rpc:call(hd(Nodes), application, get_env, [fmke, target_database]),
     io:format("FMKe node is using module ~p as the driver.~n", [Driver]),
     %% check total number of records according to dataset
     TotalFacilities = fmke_dataset:num_facilities(Dataset),
@@ -80,6 +81,7 @@ main(CliArgs) ->
     true = ets:insert(TabId, {skip_prescriptions, SkipPrescriptions}),
     true = ets:insert(TabId, {only_prescriptions, OnlyPrescriptions}),
     true = ets:insert(TabId, {continue_if_exists, Continue}),
+    true = ets:insert(TabId, {mod, remote_module(hd(Nodes), Database)}),
     %% start coordinator, reporting, and zipf server process
     #{size := ZipfSize, skew := ZipfSkew} = fmke_dataset:get_zipf_params(Dataset),
     fmke_populator_zipf:start(ZipfSize, ZipfSkew),
@@ -87,7 +89,7 @@ main(CliArgs) ->
     maybe_start_report_server(Update),
     Start = erlang:monotonic_time(),
     %% Begin actual population
-    io:format("Populating FMKe...~n"),
+    io:format("Populating ~p...~n", [Database]),
     fmke_populator_coordinator:begin_population(),
     receive
         {error, {coord_exit, Reason}} ->
@@ -119,6 +121,23 @@ print_result(Ops, Time) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
+
+remote_module(Node, Database) ->
+    case rpc:call(Node, code, which, [fmke_populate]) of
+        non_existing ->
+            io:format("Module 'fmke_populate' not loaded on remote node, cannot speed up insertion."),
+            fmke;
+        _Path ->
+            Supported = rpc:call(Node, fmke_populate, supported, []),
+            case lists:member(Database, Supported) of
+                false ->
+                    io:format("Module 'fmke_populate' does not support ~p, cannot speed up insertion.", [Database]),
+                    fmke;
+                true ->
+                    io:format("Using check-free insertion mode from the remote 'fmke_populate' module."),
+                    fmke_populate
+            end
+    end.
 
 num_or_zero(_N, true) -> 0;
 num_or_zero(N, false) -> N.

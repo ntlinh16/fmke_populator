@@ -121,6 +121,8 @@ rpc(Node, Module, Op, Params, Timeout, Tries, Continue) ->
     case rpc:call(Node, Module, Op, Params, Timeout) of
         ok ->
             ok;
+        {error, aborted} ->
+            rpc(Node, Module, Op, Params, Timeout, Tries-1, Continue);
         {error, facility_id_taken} when Continue == true ->
             skipped;
         {error, patient_id_taken} when Continue == true ->

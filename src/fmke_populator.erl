@@ -81,7 +81,7 @@ main(CliArgs) ->
     true = ets:insert(TabId, {skip_prescriptions, SkipPrescriptions}),
     true = ets:insert(TabId, {only_prescriptions, OnlyPrescriptions}),
     true = ets:insert(TabId, {continue_if_exists, Continue}),
-    true = ets:insert(TabId, {mod, remote_module(hd(Nodes), Database)}),
+    true = ets:insert(TabId, {mod, fmke}),
     %% start coordinator, reporting, and zipf server process
     #{size := ZipfSize, skew := ZipfSkew} = fmke_dataset:get_zipf_params(Dataset),
     fmke_populator_zipf:start(ZipfSize, ZipfSkew),
@@ -94,17 +94,14 @@ main(CliArgs) ->
     receive
         {error, {coord_exit, Reason}} ->
             maybe_shutdown_report_server(Update),
-            maybe_shutdown_pop_module(hd(Nodes)),
             io:format("Error - Population coordinator process died:~n~p~n", [Reason]),
             erlang:halt(?EXIT_COORD_DIED);
         {error, Error} ->
             maybe_shutdown_report_server(Update),
-            maybe_shutdown_pop_module(hd(Nodes)),
             io:format("Error - Population terminated abrubtly due to internal error:~p~n", [Error]),
             erlang:halt(?EXIT_POP_ERROR);
         {ok, NumOps} ->
             maybe_shutdown_report_server(Update),
-            maybe_shutdown_pop_module(hd(Nodes)),
             End = erlang:monotonic_time(),
             TimeDiff = erlang:convert_time_unit(End-Start, native, second),
             print_result(NumOps, TimeDiff),
@@ -124,33 +121,6 @@ print_result(Ops, Time) ->
 %%====================================================================
 %% Internal functions
 %%====================================================================
-
-remote_module(Node, Database) ->
-    case rpc:call(Node, code, which, [fmke_populate]) of
-        non_existing ->
-            io:format("Module 'fmke_populate' not loaded on remote node, cannot speed up insertion.~n"),
-            fmke;
-        _Path ->
-            Supported = rpc:call(Node, fmke_populate, supported, []),
-            case lists:member(Database, Supported) of
-                false ->
-                    io:format("Module 'fmke_populate' does not support ~p, cannot speed up insertion.~n", [Database]),
-                    fmke;
-                true ->
-                    {ok, _Pid} = rpc:call(Node, fmke_populate, start, []),
-                    io:format("Using check-free insertion mode from the remote 'fmke_populate' module.~n"),
-                    fmke_populate
-            end
-    end.
-
-maybe_shutdown_pop_module(Node) ->
-    [{mod, Module}] = ets:lookup(?ETS_TABLE, mod),
-    case Module of
-        fmke ->
-            ok;
-        fmke_populate ->
-            rpc:call(Node, fmke_populate, stop, [])
-    end.
 
 num_or_zero(_N, true) -> 0;
 num_or_zero(N, false) -> N.

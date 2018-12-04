@@ -157,7 +157,15 @@ gen_random_type() ->
     gen_random_string(8 + rand:uniform(10)).
 
 gen_random_date() ->
-    gen_random_string(10).
+    Year = integer_to_list(rand:uniform(100) + 2000),
+    Month = padded_number(rand:uniform(12)),
+    Day = padded_number(rand:uniform(28)), %% we don't want to generate invalid days like 2012-02-31
+    Year ++ "-" ++ Month ++ "-" ++ Day.
+
+padded_number(X) when is_integer(X), X < 10 ->
+    "0" ++ integer_to_list(X);
+padded_number(X) when is_integer(X) ->
+    integer_to_list(X).
 
 gen_random_string(NumBytes) when NumBytes > 0 ->
     binary_to_list(base64:encode(crypto:strong_rand_bytes(NumBytes))).

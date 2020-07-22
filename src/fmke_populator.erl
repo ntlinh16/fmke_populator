@@ -4,7 +4,7 @@
 
 -define(OPTSPEC, [
     {cookie, $c, "cookie", {atom, ?COOKIE}, "Cookie value to connect to FMKe servers via Distributed Erlang"},
-    {dataset, $d, "dataset", {atom, ?BENCH_STANDARD}, "Data set to populate (e.g. standard | small | minimal)"},
+    {dataset, $d, "dataset", {string, ?BENCH_STANDARD}, "Data set to populate (e.g. standard | small | minimal)"},
     {force, $f, "force", {boolean, false}, "Continue even if some of the records are already present"},
     {help, $h, "help", false, "Shows this message"},
     {nodename, $n, "nodename", {atom, ?NODE_NAME}, "Erlang node name for the populator script (use longnames)"},

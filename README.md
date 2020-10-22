@@ -45,13 +45,23 @@ Where `<list_of_nodes>` is required and should be passed in as a list of Erlang 
 
 
 ## Run fmke_populator with a Docker container
-1. Build the Docker image locally
+<b>1. Get the fmke_populator Docker image
+
+You can build the Docker image locally
 ```
 git clone https://github.com/ntlinh16/fmke_populator.git
 cd fmke_populator/
 docker build -t fmke_pop:local .
 ```
-2. Run a FMKe container
+or get the image from the Docker repository:
+
+```
+docker pull ntlinh/fmke_pop:latest
+```
+
+Please remember provide the correct image name to run a Docker container in the Section 2.
+
+<b>2. Run a FMKe container
 
 If you already had a FMKe app server is running, you firts need to get the FMKe's IP. Then, you pass this IP to fmke_populatore docker as follow:
 
@@ -59,7 +69,8 @@ If you already had a FMKe app server is running, you firts need to get the FMKe'
 IP=$((docker inspect fmke | grep IPAddress ) | grep -oP '(?<=: ").*(?=")');
 docker run --name fmke_pop -h fmke_pop fmke_pop:local fmke@$IP
 ```
-After these comments, docker `fmke_pop` will populate data to the database. You can check all the options in the following sections to run the population successfully.
+After these comments, docker `fmke_pop` will populate data to the database. You can check all the options in the next Section to run the population successfully.
+
 In my experiences, I will first populate the databse with no prescription, and populate the database with only the prescription as follow:
 
 ```

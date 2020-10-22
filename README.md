@@ -43,7 +43,36 @@ Where `<list_of_nodes>` is required and should be passed in as a list of Erlang 
 
     $ ./fmke_populator fmke@192.168.1.1 fmke@192.168.1.2 fmke@192.168.1.3 fmke@192.168.1.4
 
-### Options
+
+## Run fmke_populator with a Docker container
+1. Build the Docker image locally
+```
+git clone https://github.com/ntlinh16/fmke_populator.git
+cd fmke_populator/
+docker build -t fmke_pop:local .
+```
+2. Run a FMKe container
+
+If you already had a FMKe app server is running, you firts need to get the FMKe's IP. Then, you pass this IP to fmke_populatore docker as follow:
+
+```
+IP=$((docker inspect fmke | grep IPAddress ) | grep -oP '(?<=: ").*(?=")');
+docker run --name fmke_pop -h fmke_pop fmke_pop:local fmke@$IP
+```
+After these comments, docker `fmke_pop` will populate data to the database. You can check all the options in the following sections to run the population successfully.
+In my experiences, I will first populate the databse with no prescription, and populate the database with only the prescription as follow:
+
+```
+IP=$((docker inspect fmke | grep IPAddress ) | grep -oP '(?<=: ").*(?=")');
+docker run --name fmke_pop1 -h fmke_pop fmke_pop:local -f --noprescriptions fmke@$IP
+```
+
+```
+IP=$((docker inspect fmke | grep IPAddress ) | grep -oP '(?<=: ").*(?=")');
+docker run --name fmke_pop2 -h fmke_pop fmke_pop:local -f --onlyprescriptions -p 1 fmke@$IP
+```
+
+## Options
 
 Some configuration is allowed through the use of command line options, which override the existing defaults. Below is a table of options you can use:
 
@@ -61,7 +90,7 @@ Here is an example running the script with nodename `populator@10.10.200.1` usin
 
     $ ./fmke_populator -n populator@10.10.200.1 -p 100 -r 0 fmke@10.10.200.2 fmke@10.10.200.3
 
-### Flags
+## Flags
 Flags are different from options since they do not require parameters to be passed in. Below is the list of available flags:
 
 | Short name | Long name | Description |

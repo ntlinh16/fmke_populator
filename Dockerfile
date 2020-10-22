@@ -11,4 +11,4 @@ RUN chmod +x run_fmke_pop.sh
 #build 
 RUN  rebar3 escriptize
 
-CMD ["/bin/bash"]
+ENTRYPOINT ["/fmke_populator/run_fmke_pop.sh"]

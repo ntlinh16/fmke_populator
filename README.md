@@ -90,7 +90,7 @@ Some configuration is allowed through the use of command line options, which ove
 | Short option | Long Option | Description |
 | --- | --- | --- |
 | `-c` | `--cookie` | Uses the specified value to connect to the FMKe servers via Distributed Erlang. |
-| `-d` | `--dataset` | Data set to populate (use `standard`, `small` or `minimal`). |
+| `-d` | `--dataset` | Data set to populate (use `standard`, `medium`, `small` or `minimal`). |
 | `-n` | `--nodename` | Node name to be used in Distributed Erlang. Must be `longnames`. |
 | `-p` | `--processes` | Specifies the number of processes to use concurrently.<br>Since the script is extremely IO/bound, increasing this value will generally translate into higher throughput. |
 | `-r` | `--retries` | Number of retries per single entity in case of timeout. |
